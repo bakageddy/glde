@@ -28,9 +28,15 @@ void process_input(GLFWwindow *w) {
 }
 
 GLfloat triangle_vertices[] = {
-	-0.5f, 0.0f, 0.0f,
-	0.5f, 0.0f, 0.0f,
-	0.0f, 0.5f, 0.0f
+	1.0f, 1.0f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
+};
+
+GLuint triangle_indices[] = {
+	0, 1, 2,
+	2, 3, 0,
 };
 
 char *get_shader_source(const char *path) {
@@ -130,12 +136,17 @@ int main(int argc, char** argv) {
 
 	GLuint triangle_vao;
 	GLuint triangle_vbo;
+	GLuint vertex_ebo;
 	glGenVertexArrays(1, &triangle_vao);
 	glGenBuffers(1, &triangle_vbo);
+	glGenBuffers(1, &vertex_ebo);
 
 	glBindVertexArray(triangle_vao);
 	glBindBuffer(GL_ARRAY_BUFFER, triangle_vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triangle_indices), triangle_indices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * (sizeof(float)), (void*) 0);
 	glEnableVertexAttribArray(0);
@@ -153,7 +164,8 @@ int main(int argc, char** argv) {
 
 		glUseProgram(shader_prog);
 		glBindVertexArray(triangle_vao);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_ebo);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
 		glfwSwapBuffers(window);
