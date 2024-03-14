@@ -173,6 +173,7 @@ int main(int argc, char** argv) {
 	}
 	glDeleteVertexArrays(1, &triangle_vao);
 	glDeleteBuffers(1, &triangle_vbo);
+	glDeleteBuffers(1, &vertex_ebo);
 	glDeleteProgram(shader_prog);
 
 defer:

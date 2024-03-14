@@ -1,23 +1,30 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
 #include "../include/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <string.h>
-#include <errno.h>
+#include "utils.h"
 
-typedef struct {
-	GLuint id;
-	char *src;
-} VShader;
+#define GLDE_SHADER_IMPL
+#include "shader.h"
+
+#define GLDE_VBO_IMPL
+#include "vbo.h"
 
 static int width = 800;
 static int height = 600;
 
-#define LOG(MESSAGE, ...) fprintf(stdout, "LOG: %s:%d:" MESSAGE "\n", __FILE__, __LINE__, ##__VA_ARGS__);
-#define ERR(MESSAGE, ...) fprintf(stderr, "ERR: %s:%d:" MESSAGE "\n", __FILE__, __LINE__, ##__VA_ARGS__);
+static GLfloat vertices[] = {
+	1.0f, 1.0f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.0f,
+};
+
+void window_resize_callback(GLFWwindow *window, int w, int h) {
+	width = w;
+	height = h;
+	glViewport(0, 0, w, h);
+}
 
 GLFWwindow *MakeWindow(int width, int height, const char *title) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -29,26 +36,6 @@ GLFWwindow *MakeWindow(int width, int height, const char *title) {
 	return window;
 }
 
-char *get_shader_source(const char *path) {
-	int handle = open(path, O_RDONLY);
-	if (handle == -1) {
-		LOG("Failed to open file: %s", strerror(errno));
-		return NULL;
-	}
-	struct stat info;
-	fstat(handle, &info);
-	int size = info.st_size;
-	char *file_contents = malloc((size + 1) * sizeof(char));
-
-	if (!file_contents) return NULL;
-	if (read(handle, file_contents, size + 1) == -1) {
-		LOG("Failed to read file: %s", strerror(errno));
-		return NULL;
-	}
-	file_contents[size] = '\0';
-	close(handle);
-	return file_contents;
-}
 
 int InitGLAD(void) {
 	int result = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -56,8 +43,10 @@ int InitGLAD(void) {
 }
 
 int main(void) {
+	LOG("Initialize GLFW");
 	glfwInit();
 
+	LOG("Create GLFW window");
 	GLFWwindow *window = MakeWindow(width, height, "Chapter 1 Exercise 1");
 	if (window == NULL) {
 		goto defer;
@@ -65,14 +54,75 @@ int main(void) {
 
 	glfwMakeContextCurrent(window);
 
+	LOG("Initialize GLAD");
 	int result = InitGLAD();
-	if (result == 1) {
+	if (result == 0) {
 		goto defer;
+	}
+
+	LOG("Load Vertex Shaders");
+	Shader *vertex_sh = load_shader_from_file("./shaders/exercise1.vertex.glsl", VERTEX);
+	if (vertex_sh == NULL) {
+		goto defer;
+	}
+
+	LOG("Compile Vertex Shaders");
+	result = compile_shader(vertex_sh);
+	if (result != 0) {
+		size_t size = 512;
+		char *buf = malloc(sizeof(char) * size);
+		if (buf == NULL) goto defer;
+		get_compile_log(vertex_sh, buf, size);
+		LOG("Failed to compile shader: %s\n", buf);
+		free(buf);
+		goto defer;
+	}
+
+	LOG("Load Fragment Shaders");
+	Shader *fragment_sh = load_shader_from_file("./shaders/exercise1.frag.glsl", FRAGMENT);
+	if (fragment_sh == NULL) {
+		goto defer;
+	}
+
+	LOG("Compile Fragment Shaders");
+	result = compile_shader(vertex_sh);
+	if (result != 0) {
+		size_t size = 512;
+		char *buf = malloc(sizeof(char) * size);
+		if (buf == NULL) goto defer;
+		get_compile_log(fragment_sh, buf, size);
+		LOG("Failed to compile shader: %s\n", buf);
+		free(buf);
+		goto defer;
+	}
+
+	VBO tri = (VBO) {
+		.id = 0,
+		.vs = vertices,
+		.size = sizeof(vertices),
+	};
+
+	vbo_init(&tri);
+	vbo_load_data(&tri);
+
+	LOG("Start Main Loop");
+	glViewport(0, 0, width, height);
+	glfwSetWindowSizeCallback(window, window_resize_callback);
+	while (!glfwWindowShouldClose(window)) {
+		glClearColor(0.0f, 0.2f, 0.8f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
 
 defer:
 	if (window)
 		glfwDestroyWindow(window);
+	if (vertex_sh)
+		destroy_shader(vertex_sh);
+	if (fragment_sh)
+		destroy_shader(fragment_sh);
+	vbo_destroy(&tri);
 	glfwTerminate();
 	return 0;
 }
