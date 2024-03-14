@@ -11,6 +11,8 @@
 #define GLDE_VBO_IMPL
 #include "vbo.h"
 
+#define LOG_BUFFER_SIZE 512
+
 static int width = 800;
 static int height = 600;
 
@@ -69,12 +71,9 @@ int main(void) {
 	LOG("Compile Vertex Shaders");
 	result = compile_shader(vertex_sh);
 	if (result != 0) {
-		size_t size = 512;
-		char *buf = malloc(sizeof(char) * size);
-		if (buf == NULL) goto defer;
-		get_compile_log(vertex_sh, buf, size);
+		char buf[LOG_BUFFER_SIZE] = {0};
+		get_compile_log(vertex_sh, buf, LOG_BUFFER_SIZE);
 		LOG("Failed to compile shader: %s\n", buf);
-		free(buf);
 		goto defer;
 	}
 
@@ -87,12 +86,25 @@ int main(void) {
 	LOG("Compile Fragment Shaders");
 	result = compile_shader(vertex_sh);
 	if (result != 0) {
-		size_t size = 512;
-		char *buf = malloc(sizeof(char) * size);
-		if (buf == NULL) goto defer;
-		get_compile_log(fragment_sh, buf, size);
+		char buf[LOG_BUFFER_SIZE] = {0};
+		get_compile_log(fragment_sh, buf, LOG_BUFFER_SIZE);
 		LOG("Failed to compile shader: %s\n", buf);
-		free(buf);
+		goto defer;
+	}
+
+	LOG("Create Shader Program")
+	ShaderProgram *prog = create_shader_program(vertex_sh, fragment_sh);
+	if (prog == NULL) {
+		ERR("Failed to create shader program");
+		goto defer;
+	}
+
+	LOG("Link Shaders");
+	result = link_shader_program(prog);
+	if (result != 0) {
+		char buf[LOG_BUFFER_SIZE] = {0};
+		get_link_log(prog, buf, LOG_BUFFER_SIZE);
+		LOG("Failed to link shader: %s\n", buf);
 		goto defer;
 	}
 
@@ -109,10 +121,13 @@ int main(void) {
 	glViewport(0, 0, width, height);
 	glfwSetWindowSizeCallback(window, window_resize_callback);
 	while (!glfwWindowShouldClose(window)) {
-		glClearColor(0.0f, 0.2f, 0.8f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(prog -> id);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		glClearColor(0.0f, 0.2f, 0.8f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
 	}
 
 defer:
@@ -122,6 +137,8 @@ defer:
 		destroy_shader(vertex_sh);
 	if (fragment_sh)
 		destroy_shader(fragment_sh);
+	if (prog)
+		destroy_program(prog);
 	vbo_destroy(&tri);
 	glfwTerminate();
 	return 0;
