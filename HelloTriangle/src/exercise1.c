@@ -23,6 +23,10 @@ static GLfloat vertices[] = {
 	1.0f, 1.0f, 0.0f,
 	1.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f,
+
+	-1.0f, -1.0f, 0.0f,
+	-1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.0f
 };
 
 void window_resize_callback(GLFWwindow *window, int w, int h) {
@@ -128,7 +132,7 @@ int main(void) {
 	vao_bind(&tri_array);
 	vbo_bind(&tri);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 3 * (sizeof(float)), 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * (sizeof(float)), 0);
 	glEnableVertexAttribArray(0);
 
 	vao_unbind(&tri_array);
@@ -140,11 +144,12 @@ int main(void) {
 
 		glUseProgram(prog -> id);
 		vao_bind(&tri_array);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		glClearColor(0.0f, 0.2f, 0.8f, 1.0f);
+		glClearColor(0.5f, 0.0f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
 	LOG("BYEEEE");
