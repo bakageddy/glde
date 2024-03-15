@@ -11,6 +11,9 @@
 #define GLDE_VBO_IMPL
 #include "vbo.h"
 
+#define GLDE_VAO_IMPL
+#include "vao.h"
+
 #define LOG_BUFFER_SIZE 512
 
 static int width = 800;
@@ -108,14 +111,27 @@ int main(void) {
 		goto defer;
 	}
 
+	VAO tri_array = (VAO) {
+		.id = 0,
+	};
+
 	VBO tri = (VBO) {
 		.id = 0,
 		.vs = vertices,
 		.size = sizeof(vertices),
 	};
 
+	vao_init(&tri_array);
 	vbo_init(&tri);
 	vbo_load_data(&tri);
+
+	vao_bind(&tri_array);
+	vbo_bind(&tri);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 3 * (sizeof(float)), 0);
+	glEnableVertexAttribArray(0);
+
+	vao_unbind(&tri_array);
 
 	LOG("Start Main Loop");
 	glViewport(0, 0, width, height);
@@ -123,12 +139,15 @@ int main(void) {
 	while (!glfwWindowShouldClose(window)) {
 
 		glUseProgram(prog -> id);
+		vao_bind(&tri_array);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
 		glClearColor(0.0f, 0.2f, 0.8f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 	}
+	LOG("BYEEEE");
 
 defer:
 	if (window)
@@ -140,6 +159,7 @@ defer:
 	if (prog)
 		destroy_program(prog);
 	vbo_destroy(&tri);
+	vao_destroy(&tri_array);
 	glfwTerminate();
 	return 0;
 }

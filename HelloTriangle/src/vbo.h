@@ -10,6 +10,12 @@ typedef struct {
 	size_t size;
 } VBO;
 
+static inline void vbo_init(VBO *vbo);
+static inline void vbo_bind(VBO *vbo);
+static inline void vbo_unbind(VBO *vbo);
+static inline void vbo_load_data(VBO *vbo);
+static inline void vbo_destroy(VBO *vbo);
+
 #define GLDE_VBO_IMPL // Debug
 #ifdef GLDE_VBO_IMPL
 
