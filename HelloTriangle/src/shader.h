@@ -69,7 +69,10 @@ inline static Shader *load_shader_from_file(const char *src_path, ShaderType typ
 	s -> type = type;
 	s -> src_path = src_path;
 	s -> src = get_shader_source(src_path);
-	if (s -> src == NULL) return NULL;
+	if (s -> src == NULL) {
+		free(s);
+		return NULL;
+	}
 	return s;
 }
 
@@ -77,8 +80,10 @@ inline static int compile_shader(Shader *sh) {
 	if (sh == NULL || sh -> src == NULL) return 1;
 	if (sh -> type == VERTEX)
 		sh -> id = glCreateShader(GL_VERTEX_SHADER);
-	else 
+	else if (sh -> type == FRAGMENT)
 		sh -> id = glCreateShader(GL_FRAGMENT_SHADER);
+	else 
+		return 1;
 	glShaderSource(sh -> id, 1, &sh -> src, NULL);
 	glCompileShader(sh -> id);
 	GLint compiled;
