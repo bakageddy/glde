@@ -1,18 +1,18 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "../include/glad/glad.h"
+#include "../../include/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <string.h>
-#include "utils.h"
+#include "../../glde/utils.h"
 
 #define GLDE_SHADER_IMPL
-#include "shader.h"
+#include "../../glde/shader.h"
 
 #define GLDE_VBO_IMPL
-#include "vbo.h"
+#include "../../glde/vbo.h"
 
 #define GLDE_VAO_IMPL
-#include "vao.h"
+#include "../../glde/vao.h"
 
 #define LOG_BUFFER_SIZE 512
 

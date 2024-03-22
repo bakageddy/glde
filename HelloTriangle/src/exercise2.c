@@ -1,11 +1,11 @@
-#include "../include/glad/glad.h"
+#include "../../include/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <stdbool.h>
 
-#include "shader.h"
-#include "utils.h"
-#include "vao.h"
-#include "vbo.h"
+#include "../../glde/shader.h"
+#include "../../glde/utils.h"
+#include "../../glde/vao.h"
+#include "../../glde/vbo.h"
 
 static int width = 800;
 static int height = 600;
