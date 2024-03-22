@@ -76,6 +76,8 @@ inline static Shader *load_shader_from_file(const char *src_path, ShaderType typ
 	return s;
 }
 
+// 0 -> Successful Compile
+// 1 -> Compile Error, use `get_compile_log` for further info
 inline static int compile_shader(Shader *sh) {
 	if (sh == NULL || sh -> src == NULL) return 1;
 	if (sh -> type == VERTEX)

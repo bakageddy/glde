@@ -1,6 +1,8 @@
 #include "../../include/glad/glad.h"
 #include "../../glde/utils.h"
 #include "../../glde/shader.h"
+#include "../../glde/vbo.h"
+#include "../../glde/vao.h"
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 
@@ -10,6 +12,19 @@
 static int width = 800;
 static int height = 600;
 
+static float angle = 0.0f;
+
+float tri_coord[] = {
+	0.5f, 0.5f, 0.0f,
+	-0.5f, 0.0f, 0.0f,
+	0.0f, 0.5f, 0.0f,
+};
+
+void glde_handle_resize(GLFWwindow *window, int width, int height) {
+	(void) window;
+	glViewport(0, 0, width, height);
+}
+
 GLFWwindow *glde_create_window(const char *title, int width, int height) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -17,6 +32,13 @@ GLFWwindow *glde_create_window(const char *title, int width, int height) {
 
 	GLFWwindow *window = glfwCreateWindow(width, height, title, NULL, NULL);
 	return window;
+}
+
+void handle_enter(GLFWwindow *window) {
+	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_REPEAT)
+		angle += 2.0f;
+	if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
+		angle += 1.0f;
 }
 
 int main(void) {
@@ -32,6 +54,9 @@ int main(void) {
 		goto defer;
 	}
 
+	glViewport(0, 0, width, height);
+	glfwSetWindowSizeCallback(window, glde_handle_resize);
+
 	Shader *vshad = load_shader_from_file(VSHADER_PATH, VERTEX);
 	if (vshad == NULL) {
 		ERR("Failed to load vertex shader");
@@ -44,10 +69,18 @@ int main(void) {
 		goto defer;
 	}
 
-	// TODO: multiple shader compile log, Is that even worth it?
-	// Think mark, Think!
-	if (compile_shader(vshad) != 0 || compile_shader(fshad) != 0) {
-		ERR("Failed to compile shaders!");
+	if (compile_shader(vshad) != 0) {
+		char buf[512] = {0};
+		get_compile_log(vshad, buf, 512);
+		ERR("Failed to compile vertex shader: %s", buf);
+		goto defer;
+
+	}
+
+	if (compile_shader(fshad) != 0) {
+		char buf[512] = {0};
+		get_compile_log(fshad, buf, 512);
+		ERR("Failed to compile fragment shader: %s", buf);
 		goto defer;
 	}
 
@@ -64,13 +97,43 @@ int main(void) {
 		goto defer;
 	}
 
+	VBO triangle = (VBO) {
+		.id = 0,
+		.vs = tri_coord,
+		.size = sizeof(tri_coord),
+	};
+
+	VAO vt = {0};
+
+	vao_init(&vt);
+
+	vbo_init(&triangle);
+	vbo_load_data(&triangle);
+
+	vao_bind(&vt);
+	vbo_bind(&triangle);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, sizeof(float) * 3, 0);
+	glEnableVertexAttribArray(0);
+	vbo_unbind(&triangle);
+	vao_unbind(&vt);
+
+	vao_bind(&vt);
 	while (!glfwWindowShouldClose(window)) {
 		glUseProgram(prog -> id);
+
+		int uni_loc = glGetUniformLocation(prog -> id, "angle");
+		glUniform1f(uni_loc, angle);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+		glClearColor(0.11328f, 0.125f, 0.1289f, 1.0f);
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		handle_enter(window);
 	}
+	vao_destroy(&vt);
+	vbo_destroy(&triangle);
 
 defer:
 	if (prog != NULL) {
