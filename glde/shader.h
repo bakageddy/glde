@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <errno.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 typedef enum {
@@ -25,6 +26,7 @@ typedef struct {
 
 typedef struct {
 	GLuint id;
+	int uniforms;
 } ShaderProgram;
 
 inline static char *get_shader_source(const char *path);
@@ -34,6 +36,12 @@ inline static char* get_compile_log(Shader *sh, char *buf, size_t size);
 inline static void destroy_shader(Shader *sh);
 
 inline static ShaderProgram* create_shader_program(Shader *vertex, Shader *fragment);
+
+inline static int program_uniform1f(ShaderProgram *p, const char *ident, const float val);
+inline static int program_uniform1i(ShaderProgram *p, const char *ident, const int val);
+inline static int program_uniform1b(ShaderProgram *p, const char *ident, const bool val);
+inline static int program_uniform1ui(ShaderProgram *p, const char *ident, const unsigned int val);
+
 inline static int link_shader_program(ShaderProgram *p);
 inline static char* get_link_log(ShaderProgram *p, char *buf, size_t size);
 inline static void destroy_program(ShaderProgram *p);
@@ -114,6 +122,7 @@ inline static ShaderProgram* create_shader_program(Shader *vertex, Shader *fragm
 	ShaderProgram *prog = (ShaderProgram *) malloc(sizeof(ShaderProgram));
 	if (prog == NULL) return NULL;
 	prog -> id = glCreateProgram();
+	prog -> uniforms = 0;
 	glAttachShader(prog -> id, vertex -> id);
 	glAttachShader(prog -> id, fragment -> id);
 	return prog;
@@ -132,8 +141,37 @@ inline static int link_shader_program(ShaderProgram *p) {
 	glLinkProgram(p -> id);
 	GLint result;
 	glGetProgramiv(p -> id, GL_LINK_STATUS, &result);
-	if (result == GL_TRUE) return 0;
-	else return 1;
+	if (result != GL_TRUE) return 1;
+	glGetProgramiv(p -> id, GL_ACTIVE_UNIFORMS, &(p -> uniforms));
+	return 0;
+}
+
+inline static int program_uniform1f(ShaderProgram *p, const char *ident, const float val) {
+	int loc = glGetUniformLocation(p -> id, ident);
+	if (loc == -1) return 1;
+	glUniform1f(loc, val);
+	return 0;
+}
+
+inline static int program_uniform1i(ShaderProgram *p, const char *ident, const int val) {
+	int loc = glGetUniformLocation(p -> id, ident);
+	if (loc == -1) return 1;
+	glUniform1i(loc, val);
+	return 0;
+}
+
+inline static int program_uniform1b(ShaderProgram *p, const char *ident, const bool val) {
+	int loc = glGetUniformLocation(p -> id, ident);
+	if (loc == -1) return 1;
+	glUniform1i(loc, val);
+	return 0;
+}
+
+inline static int program_uniform1ui(ShaderProgram *p, const char *ident, const unsigned int val) {
+	int loc = glGetUniformLocation(p -> id, ident);
+	if (loc == -1) return 1;
+	glUniform1ui(loc, val);
+	return 0;
 }
 
 inline static void destroy_program(ShaderProgram *p) {

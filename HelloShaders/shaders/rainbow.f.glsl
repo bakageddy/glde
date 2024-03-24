@@ -17,9 +17,9 @@ vec3 palette(float t) {
 void main() {
 	vec2 res = vec2(resolution_x, resolution_y);
 	vec2 coord = vec2(vertex_output.x, vertex_output.y);
-	vec2 uv = coord.xy  - res.xy;
+	vec2 uv = (coord.xy) * (res.xy / res.y);
 	float d = length(uv);
-	vec3 color = palette(time * d);
+	vec3 color = palette(time + d);
 	d = sin(d * 8 + time) / 8.0;
 	d = abs(d);
 	d = 0.01/d;

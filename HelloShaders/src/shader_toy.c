@@ -128,7 +128,7 @@ int main(void) {
 
 	vao_bind(&vt);
 	vbo_bind(&triangle);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 	vbo_unbind(&triangle);
 	vao_unbind(&vt);
@@ -137,8 +137,10 @@ int main(void) {
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(window)) {
 		glUseProgram(prog -> id);
-		int uni_loc = glGetUniformLocation(prog -> id, "angle");
-		glUniform1f(uni_loc, angle);
+		program_uniform1f(prog, "angle", angle);
+		program_uniform1f(prog, "in_time", (float) glfwGetTime());
+		program_uniform1f(prog, "in_resolution_x", (float) width);
+		program_uniform1f(prog, "in_resolution_y", (float) height);
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.11328f, 0.125f, 0.1289f, 1.0f);

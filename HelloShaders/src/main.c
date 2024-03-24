@@ -15,9 +15,9 @@ static int height = 600;
 static float angle = 0.0f;
 
 float coordinates[] = {
-	0.5f, 0.5f, 0.0f,
-	-0.5f, 0.0f, 0.0f,
-	0.0f, 0.5f, 0.0f,
+	1.0f, 0.0f, 0.0f,
+	-1.0f, 0.0f, 0.0f,
+	0.0f, 1.0f, 0.0f,
 };
 
 void glde_handle_resize(GLFWwindow *window, int width, int height) {
@@ -121,8 +121,8 @@ int main(void) {
 	while (!glfwWindowShouldClose(window)) {
 		glUseProgram(prog -> id);
 
-		int uni_loc = glGetUniformLocation(prog -> id, "angle");
-		glUniform1f(uni_loc, angle);
+		program_uniform1f(prog, "angle", angle);
+		program_uniform1f(prog, "in_time", (float) glfwGetTime());
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.11328f, 0.125f, 0.1289f, 1.0f);
 
