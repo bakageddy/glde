@@ -28,6 +28,7 @@ static inline void vbo_bind(VBO *vbo) {
 }
 
 static inline void vbo_unbind(VBO *vbo) {
+	(void) vbo;
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 

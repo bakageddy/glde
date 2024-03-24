@@ -4,10 +4,13 @@ in vec3 vertex_output;
 out vec4 frag_color;
 
 void main() {
+	float d = length(vertex_output);
+	d = abs(d) * exp(-length(vertex_output));
+	d = 0.2 / d;
 	frag_color = vec4(
-					sin(vertex_output.x) * vertex_output.x,
-					cos(vertex_output.y) * vertex_output.y,
-					tan(vertex_output.y + vertex_output.x) * vertex_output.z,
+					d,
+					d,
+					d,
 					1.0f
 				);
 }

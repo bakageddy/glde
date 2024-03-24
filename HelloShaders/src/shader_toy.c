@@ -3,21 +3,28 @@
 #include "../../glde/shader.h"
 #include "../../glde/vbo.h"
 #include "../../glde/vao.h"
+#include "../../glde/ibo.h"
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 
 #define VSHADER_PATH "/home/dinu/.software/glde/HelloShaders/shaders/rotate.v.glsl"
 #define FSHADER_PATH "/home/dinu/.software/glde/HelloShaders/shaders/rainbow.f.glsl"
 
-static int width = 800;
+static int width = 600;
 static int height = 600;
 
 static float angle = 0.0f;
 
-float coordinates[] = {
-	0.5f, 0.5f, 0.0f,
-	-0.5f, 0.0f, 0.0f,
-	0.0f, 0.5f, 0.0f,
+static float coordinates[] = {
+	1.0f, 1.0f, 0.0f,
+	1.0f, -1.0f, 0.0f,
+	-1.0f, 1.0f, 0.0f,
+	-1.0f, -1.0f, 0.0f
+};
+
+static unsigned int indices[] = {
+	0, 1, 3,
+	0, 3, 2,
 };
 
 void glde_handle_resize(GLFWwindow *window, int width, int height) {
@@ -103,30 +110,41 @@ int main(void) {
 		.size = sizeof(coordinates),
 	};
 
+	IBO elems = (IBO) {
+		.id = 0,
+		.indices = indices,
+		.size = sizeof(indices),
+	};
+
+
 	VAO vt = {0};
 
 	vao_init(&vt);
 
+	ibo_init(&elems);
+	ibo_load_data(&elems);
 	vbo_init(&triangle);
 	vbo_load_data(&triangle);
 
 	vao_bind(&vt);
 	vbo_bind(&triangle);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, sizeof(float) * 3, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glEnableVertexAttribArray(0);
 	vbo_unbind(&triangle);
 	vao_unbind(&vt);
 
 	vao_bind(&vt);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	while (!glfwWindowShouldClose(window)) {
 		glUseProgram(prog -> id);
-
 		int uni_loc = glGetUniformLocation(prog -> id, "angle");
 		glUniform1f(uni_loc, angle);
+
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.11328f, 0.125f, 0.1289f, 1.0f);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		ibo_bind(&elems);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -134,6 +152,7 @@ int main(void) {
 	}
 	vao_destroy(&vt);
 	vbo_destroy(&triangle);
+	ibo_destroy(&elems);
 
 defer:
 	if (prog != NULL) {
