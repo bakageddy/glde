@@ -18,13 +18,11 @@ void main() {
 	vec2 res = vec2(resolution_x, resolution_y);
 	vec2 coord = vec2(vertex_output.x, vertex_output.y);
 	vec2 uv = coord.xy  - res.xy;
-	vec3 finalcolor = vec3(0.0);
-	uv = fract(uv * 4) - 0.5;
-	float d = length(uv) * exp(-length(uv));
+	float d = length(uv);
 	vec3 color = palette(time * d);
 	d = sin(d * 8 + time) / 8.0;
 	d = abs(d);
-	d = pow(0.01/d, 1.616);
-	finalcolor += color * d;
-	frag_color = vec4(finalcolor, 1.0f);
+	d = 0.01/d;
+	color *= d;
+	frag_color = vec4(color, 1.0f);
 }
