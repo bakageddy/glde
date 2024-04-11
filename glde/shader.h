@@ -42,6 +42,8 @@ inline static int program_uniform1i(ShaderProgram *p, const char *ident, const i
 inline static int program_uniform1b(ShaderProgram *p, const char *ident, const bool val);
 inline static int program_uniform1ui(ShaderProgram *p, const char *ident, const unsigned int val);
 
+inline static int program_uniform4f(ShaderProgram *p, const char *ident, const float val1, const float val2, const float val3, const float val4);
+
 inline static int link_shader_program(ShaderProgram *p);
 inline static char* get_link_log(ShaderProgram *p, char *buf, size_t size);
 inline static void destroy_program(ShaderProgram *p);
@@ -150,6 +152,13 @@ inline static int program_uniform1f(ShaderProgram *p, const char *ident, const f
 	int loc = glGetUniformLocation(p -> id, ident);
 	if (loc == -1) return 1;
 	glUniform1f(loc, val);
+	return 0;
+}
+
+inline static int program_uniform4f(ShaderProgram *p, const char *ident, const float val1, const float val2, const float val3, const float val4) {
+	int loc = glGetUniformLocation(p -> id, ident);
+	if (loc == -1) return 1;
+	glUniform4f(loc, val1, val2, val3, val4);
 	return 0;
 }
 

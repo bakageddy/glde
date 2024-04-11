@@ -7,8 +7,8 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 
-#define VSHADER_PATH "/home/dinu/.software/glde/HelloShaders/shaders/rotate.v.glsl"
-#define FSHADER_PATH "/home/dinu/.software/glde/HelloShaders/shaders/rainbow.f.glsl"
+#define VSHADER_PATH "/home/dev/.software/glde/HelloShaders/shaders/rotate.v.glsl"
+#define FSHADER_PATH "/home/dev/.software/glde/HelloShaders/shaders/rainbow.f.glsl"
 
 static int width = 600;
 static int height = 600;

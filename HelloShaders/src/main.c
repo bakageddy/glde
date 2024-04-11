@@ -151,6 +151,7 @@ defer:
 	if (window != NULL) {
 		glfwDestroyWindow(window);
 	}
+
 	glfwTerminate();
 	return 0;
 }
